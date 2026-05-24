@@ -24,9 +24,41 @@ Use this skill to replace "it seems to work" with falsifiable evidence. Severe t
 2. **List refutations.** For each claim, name observations that would prove it false: wrong value, silent corruption, leaked data, unauthorized access, stale state, race, timeout, resource blowup, missing audit trail, or unsafe fallback.
 3. **Choose oracles.** Prefer independent references, specs, mathematical identities, normalized diffs, state-machine invariants, security policies, permission matrices, schema validators, accessibility trees, or trusted library behavior.
 4. **Attack the input space.** Cover boundaries, just-outside-boundaries, malformed data, Unicode, nulls, huge values, ordering changes, duplicate names, collisions, stale caches, retries, interrupted writes, concurrent operations, and random operation sequences.
-5. **Add malicious breakage tests.** Simulate attacker-controlled input, hostile ordering, compromised dependencies, confused-deputy paths, privilege escalation attempts, forged identities, tampered storage, replayed requests, and resource exhaustion.
+5. **Add malicious breakage tests.** Simulate attacker-controlled input, hostile ordering, compromised dependencies, confused-deputy paths, privilege escalation attempts, forged identities, tampered storage, replayed requests, and resource exhaustion. When the surface is broad, fan out by threat category (authz, injection, concurrency, resource exhaustion, supply chain, secrets/privacy) and treat each lens independently before merging findings, so one lens's blind spot does not silence another.
 6. **Run the strongest relevant checks.** Add targeted tests when existing checks do not refute the claim. Prefer automated evidence over inspection alone.
 7. **Report evidence.** Summarize what was tested, what failed, root cause, fix, remaining risk, and exact commands or artifacts that verify the outcome.
+
+## Triage And Confidence
+
+Severe testing surfaces many candidate failures. Score each finding before reporting it, and filter out the speculative tail. The goal is to separate failures you have *demonstrated* from risks you have only *imagined*.
+
+Score each candidate finding on this scale:
+
+- **0 — Inapplicable.** The attack surface or failure mode does not exist in this code (e.g., SSRF on a function with no network egress, SQL injection on code that issues no SQL, race condition on code with no shared mutable state). Drop it.
+- **25 — Speculative.** The failure mode is conceivable in principle, but no test exhibits it and no concrete code path has been traced. Record as untested risk, do not report as a finding.
+- **50 — Reproduced under contrived conditions.** A test exhibits the failure, but only with implausible inputs, unrealistic configuration, or already-compromised prerequisites. Report as a conditional finding with the conditions stated plainly.
+- **75 — Reliably reproduced under realistic conditions.** A repeatable test fails with realistic input, against an independent oracle, in a configuration the code is meant to run in. Report as a finding.
+- **100 — Demonstrated in the real runtime.** The failure reproduces in the actual environment of use with captured evidence (payload, log, diff, state). Report as a high-confidence finding with the evidence attached.
+
+Report findings at ≥50, with their score and the evidence. List 25-level items separately under "untested risk" so they are not silently lost but also not claimed as bugs. Drop 0-level items.
+
+For findings that fix a previously demonstrated bug, the bar is 75 or 100 (a regression test that does not actually fail on the broken code is not evidence).
+
+### Filter Out These False Positives
+
+Over-eager security tests are noisy. Suppress findings that match these patterns before scoring:
+
+- **No attack surface.** The threat category does not apply to this code (e.g., flagging SSRF on a pure function, prompt injection on code that never calls an LLM, deserialization risks on code that only emits output).
+- **Implausible preconditions.** The exploit requires capabilities the threat model already grants the attacker (root on the host, the signing key, a privileged session), so the proposed defense is out of scope.
+- **Mitigated at a higher layer without showing the layer fails.** Parameterized ORM, framework CSRF middleware, platform sandbox, or transport-layer auth already handles it; do not flag unless you can demonstrate the higher layer is bypassed.
+- **Pure speculation about concurrency.** "Could race" on code with no shared mutable state, no shared external resource, and no interleaved I/O.
+- **Internal helpers unreachable from any untrusted boundary.** Authorization, validation, and injection findings on code that is only ever called with trusted input from controlled call sites.
+- **Unrealistic input sizes or shapes** with no realistic delivery path (e.g., a 10 GB string into a function only ever called with a CLI flag bounded by argv limits).
+- **Pre-existing issues unrelated to the claim under test.** Note them separately, do not bundle them into the severe-testing report for the current change.
+- **Generic warnings without a concrete path.** "Uses `eval`", "uses `pickle`", "uses `innerHTML`" on inputs that are demonstrably trusted or already encoded.
+- **Findings the test suite itself can't reproduce.** If you cannot write a test or capture an artifact that exhibits the failure, it belongs in untested risk, not in findings.
+
+A finding is only as strong as the evidence attached to it. Prefer fewer, demonstrated failures over a long list of plausible-sounding ones.
 
 ## Severity Ladder
 
