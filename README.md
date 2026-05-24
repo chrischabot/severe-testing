@@ -30,6 +30,9 @@ It also includes common misspellings such as `adveserial` and `vunerability` so 
 - Build tests around refutation rather than confirmation.
 - Prefer strong oracles such as reference implementations, invariants, normalized diffs, permission matrices, and trusted specifications.
 - Add adversarial, malicious, security, fuzz, concurrency, recovery, and resource-exhaustion coverage where relevant.
+- Fan out broad surfaces by independent threat-category lenses (authz, injection, concurrency, resource exhaustion, supply chain, secrets/privacy) so one lens's blind spot does not silence another.
+- Score each candidate finding on a 0-100 confidence scale weighted toward demonstrated evidence over speculation, and filter out the speculative tail before reporting.
+- Suppress the common false positives of over-eager security testing (no real attack surface, implausible preconditions, mitigations at a higher layer, unreachable internal helpers, generic warnings without a concrete path).
 - Reproduce failures before fixing them, then keep regression tests.
 - Validate with the strongest relevant project checks and report the evidence plainly.
 
