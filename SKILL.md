@@ -5,40 +5,41 @@ description: Severe, serious, adversarial, adveserial, malicious, and security-f
 
 # Severe Testing
 
-Use this skill to turn "it seems to work" into falsifiable evidence. The goal is not to confirm the happy path; the goal is to make a sincere, fair, aggressive attempt to refute the implementation's claims, expose root causes, and find failures before users or attackers do.
+Use this skill to replace "it seems to work" with falsifiable evidence. Severe testing is a fair but aggressive attempt to refute an implementation's claims, expose root causes, and find failures before users or attackers do.
 
-## Operating Rules
+## Core Stance
 
 - State assumptions, preconditions, and success criteria before designing tests.
-- Test the real behavioral claim, not defaults, constructors, implementation details, or type annotations.
+- Test behavioral claims, not defaults, constructors, type annotations, or incidental internals.
 - Prefer tests that would fail for plausible broken implementations.
-- Reproduce known bugs first, then fix, then keep the reproducer as a regression test.
-- Do not paper over failures. If a test fails, investigate the root cause before stacking fixes.
-- Use disposable fixtures, mocks, local harnesses, temporary directories, test tenants, or sandboxed services for destructive and malicious cases.
-- Never attack third-party systems or live production data. Model malicious behavior safely inside authorized environments.
+- Reproduce known bugs before fixing them, then keep the reproducer as a regression test.
+- Investigate failing tests to root cause before adding fixes or relaxing assertions.
+- Use the project's real validation surface: unit, integration, browser, build, lint, typecheck, performance, security, and runtime checks as appropriate.
+- Run destructive, malicious, or failure-injection scenarios only in disposable fixtures, sandboxes, temporary directories, test tenants, or authorized staging environments.
+- Never attack third-party systems, production systems, or real user data. Model hostile behavior safely inside authorized test environments.
 
 ## Workflow
 
 1. **Name the claim.** Write what the code claims to do, the valid input space, postconditions, invariants, performance budgets, security boundaries, and failure semantics.
 2. **List refutations.** For each claim, name observations that would prove it false: wrong value, silent corruption, leaked data, unauthorized access, stale state, race, timeout, resource blowup, missing audit trail, or unsafe fallback.
-3. **Choose oracles.** Prefer independent references, specs, mathematical identities, canonical diffs, state-machine invariants, security policies, permission matrices, schema validators, browser accessibility trees, or trusted library behavior.
+3. **Choose oracles.** Prefer independent references, specs, mathematical identities, normalized diffs, state-machine invariants, security policies, permission matrices, schema validators, accessibility trees, or trusted library behavior.
 4. **Attack the input space.** Cover boundaries, just-outside-boundaries, malformed data, Unicode, nulls, huge values, ordering changes, duplicate names, collisions, stale caches, retries, interrupted writes, concurrent operations, and random operation sequences.
 5. **Add malicious breakage tests.** Simulate attacker-controlled input, hostile ordering, compromised dependencies, confused-deputy paths, privilege escalation attempts, forged identities, tampered storage, replayed requests, and resource exhaustion.
-6. **Run the strongest relevant checks.** Use the repo's real test, typecheck, build, lint, browser, performance, security, and integration commands. Add targeted tests when no existing command refutes the claim.
+6. **Run the strongest relevant checks.** Add targeted tests when existing checks do not refute the claim. Prefer automated evidence over inspection alone.
 7. **Report evidence.** Summarize what was tested, what failed, root cause, fix, remaining risk, and exact commands or artifacts that verify the outcome.
 
 ## Severity Ladder
 
-- **Weak:** no-crash, shape/type checks, one obvious happy path.
-- **Moderate:** representative cases, edge cases, invalid input handling, clear assertions.
-- **Strong:** property-based tests, fuzzing, reference oracle, invariant checks, concurrency tests, browser or integration validation.
-- **Severe:** adversarially selected inputs plus independent oracle, malicious/abuse cases, failure injection, resource limits, persistence/restart checks, authorization boundaries, and regression coverage for the discovered root cause.
+- **Weak:** no-crash checks, shape/type assertions, or one obvious happy path.
+- **Moderate:** representative cases, edge cases, invalid input handling, and clear assertions.
+- **Strong:** property-based tests, fuzzing, reference oracles, invariant checks, concurrency tests, and integration validation.
+- **Severe:** adversarially selected inputs plus independent oracles, malicious/abuse cases, failure injection, resource limits, persistence/restart checks, authorization boundaries, and regression coverage for discovered root causes.
 
 Important code should have at least one strong or severe test. Critical code should combine several independent oracles.
 
 ## Malicious And Security Coverage
 
-Include the relevant categories below whenever the code handles identity, data, files, network calls, plugins, user content, external input, generated code, credentials, or cross-service operations.
+Include the relevant categories whenever the code handles identity, data, files, network calls, plugins, user content, external input, generated code, credentials, or cross-service operations.
 
 - **Authorization:** prove users, tenants, roles, scopes, object ownership, and row-level rules cannot be bypassed by direct IDs, stale sessions, replay, cross-account references, hidden UI calls, or forged client state.
 - **Authentication/session:** test expired tokens, revoked tokens, missing CSRF protection, refresh races, session fixation, logout invalidation, clock skew, and multi-device state.
@@ -66,13 +67,13 @@ Use domain-specific generators where possible. Seed hand-written corpora with:
 
 ## Test File Shape
 
-Document the claim near the tests when the behavior is important:
+Document important claims near the tests:
 
 ```text
 CLAIM: The operation preserves X and rejects Y.
 PRECONDITIONS: Inputs, identities, permissions, state, and environment assumed valid.
 POSTCONDITIONS: Observable guarantees after success or failure.
-ORACLE: Independent reference, invariant checker, policy matrix, canonical diff, or trusted spec.
+ORACLE: Independent reference, invariant checker, policy matrix, normalized diff, or trusted spec.
 SEVERITY: Moderate | Strong | Severe, with rationale.
 ```
 
@@ -80,10 +81,10 @@ SEVERITY: Moderate | Strong | Severe, with rationale.
 
 A severe-testing pass is incomplete until it has:
 
-- A failing or potentially failing condition that would catch a real class of bug.
+- A failing or plausibly failing condition that would catch a real class of bug.
 - Assertions against observable behavior or an independent oracle.
 - Coverage for malicious, invalid, boundary, and recovery paths where relevant.
-- Commands run and their result.
-- A precise note of any untested risk, skipped category, or weakened oracle.
+- Commands run and their results.
+- A precise note of untested risk, skipped categories, or weakened oracles.
 
-Do not call the work done because tests pass if the tests do not actually threaten the claim.
+Do not call work done just because tests pass if the tests do not actually threaten the claim.

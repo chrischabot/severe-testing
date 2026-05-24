@@ -1,4 +1,4 @@
 interface:
   display_name: "Severe Testing"
   short_description: "Adversarial tests for real confidence"
-  default_prompt: "Use $severe-testing to design serious adversarial tests for this change."
+  default_prompt: "Use $severe-testing to design adversarial and security-focused tests for this change."

@@ -1,34 +1,71 @@
-# Severe Testing Skill
+# Severe Testing
 
-This project contains a Codex/Claude Code skill for severe testing: testing that tries to refute a system's claims instead of merely confirming the happy path.
+A reusable Codex and Claude Code skill for designing tests that try to refute a system's claims instead of merely confirming the happy path.
 
-## Why
+## Why This Exists
 
-Normal test suites often prove that a feature works for the examples the author had in mind. Severe testing asks a sharper question: what would make this claim false, and have we tried hard enough to find it?
+Many test suites prove that software works for the examples the author expected. Severe testing asks a harder question: what observation would prove this claim false, and have we made a serious attempt to find it?
 
-The skill is designed to trigger automatically for prompts that ask for severe testing, serious testing, adversarial testing, adveserial testing, malicious testing, malicious breakage testing, red-team testing, or security vulnerability exposing tests.
+The skill guides an agent toward tests with real evidential weight: adversarial inputs, independent oracles, malicious abuse cases, failure injection, concurrency pressure, recovery checks, and security boundary validation.
 
-## What
+## When It Should Trigger
 
-The skill guides an agent to:
+The skill metadata is written to trigger for prompts such as:
 
-- State assumptions, claims, preconditions, postconditions, and success criteria.
-- Build tests around refutation, not confirmation.
-- Use stronger oracles such as reference implementations, invariants, canonical diffs, permission matrices, and trusted specs.
-- Add adversarial, malicious, security, fuzz, concurrency, recovery, and resource-exhaustion coverage.
+- severe testing
+- serious testing
+- adversarial testing
+- malicious testing
+- malicious breakage testing
+- red-team testing
+- abuse-case testing
+- security vulnerability exposing tests
+- fuzzing, property-based testing, stress testing, or failure-mode testing
+
+It also includes common misspellings such as `adveserial` and `vunerability` so the skill still activates when a prompt is typed quickly.
+
+## What It Teaches The Agent To Do
+
+- State assumptions, claims, preconditions, postconditions, and success criteria before writing tests.
+- Build tests around refutation rather than confirmation.
+- Prefer strong oracles such as reference implementations, invariants, normalized diffs, permission matrices, and trusted specifications.
+- Add adversarial, malicious, security, fuzz, concurrency, recovery, and resource-exhaustion coverage where relevant.
 - Reproduce failures before fixing them, then keep regression tests.
-- Validate with the strongest relevant local commands and report the evidence.
-
-## Files
-
-- `SKILL.md`: The skill loaded by Codex and Claude Code.
-- `agents/openai.yaml`: UI metadata for Codex skill lists.
+- Validate with the strongest relevant project checks and report the evidence plainly.
 
 ## Installation
 
-Install by copying or linking this directory into:
+Clone the repository:
 
-- Codex: `~/.codex/skills/severe-testing`
-- Claude Code: `~/.claude/skills/severe-testing`
+```bash
+git clone https://github.com/chrischabot/severe-testing.git
+```
 
-This repository was created as the canonical source at `~/Projects/severe-testing`; the installed copies should match this directory.
+Install for Codex by copying or linking the cloned directory into the Codex skills directory:
+
+```bash
+mkdir -p "$HOME/.codex/skills"
+ln -s "$(pwd)/severe-testing" "$HOME/.codex/skills/severe-testing"
+```
+
+Install for Claude Code by copying or linking the cloned directory into the Claude skills directory:
+
+```bash
+mkdir -p "$HOME/.claude/skills"
+ln -s "$(pwd)/severe-testing" "$HOME/.claude/skills/severe-testing"
+```
+
+If symlinks are inconvenient on your platform, copy the directory instead. The installed skill directory must contain `SKILL.md` at its root.
+
+## Files
+
+- `SKILL.md`: The skill instructions and trigger metadata.
+- `agents/openai.yaml`: Optional UI metadata for Codex skill lists.
+
+## Safety Boundary
+
+This skill is for authorized testing. It tells agents to model hostile behavior only inside disposable fixtures, sandboxes, test tenants, local harnesses, or approved staging environments. It should not be used to attack third-party systems, production systems, or real user data.
+
+## Design Principle
+
+Passing tests are not proof. Confidence comes from failing to refute a precise claim despite tests that could realistically have exposed a bug.
