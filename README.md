@@ -23,7 +23,6 @@ The skill guides an agent to:
 
 - `SKILL.md`: The skill loaded by Codex and Claude Code.
 - `agents/openai.yaml`: UI metadata for Codex skill lists.
-- `references/original-severe-testing.md`: The original desktop note, preserved as optional project-specific context for Granite-style acceptance matrices.
 
 ## Installation
 

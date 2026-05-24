@@ -87,7 +87,3 @@ A severe-testing pass is incomplete until it has:
 - A precise note of any untested risk, skipped category, or weakened oracle.
 
 Do not call the work done because tests pass if the tests do not actually threaten the claim.
-
-## Optional Reference
-
-If the task is specifically about Granite, Obsidian-compatible editor behavior, or the older project-specific severe-testing matrix, load `references/original-severe-testing.md` and use the relevant acceptance-matrix rows as additional claims and oracle ideas. Do not load that reference for ordinary severe-testing requests.
